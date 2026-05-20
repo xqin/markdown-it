@@ -769,3 +769,25 @@ Issue #1067. Don't trim non-ASCII whitespaces
 <h1>　U+3000　</h1>
 <p>　U+3000　</p>
 .
+
+Issue #1071. Recognize non-BMP punctuations and symbols
+.
+a*a∇*a
+
+a*∇a*a
+
+a*a𝜵*a
+
+a*𝜵a*a
+
+a*𐬼a*a
+
+a*a𐬼*a
+.
+<p>a*a∇*a</p>
+<p>a*∇a*a</p>
+<p>a*a𝜵*a</p>
+<p>a*𝜵a*a</p>
+<p>a*𐬼a*a</p>
+<p>a*a𐬼*a</p>
+.
