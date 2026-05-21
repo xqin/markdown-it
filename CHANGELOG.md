@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- `isPunctCharCode` to utilities.
+
+### Fixed
+- Properly recognize astral chars (surrogates) in delimiter scans for
+  emphasis-like markers, #1072. Big thanks to @tats-u for his global efforts
+  with improving CJK support.
+- Preserve unicode whitespaces when trimm headings/paragraphs, #1074.
+- More strict entities decode to avoid false positives `;`, #1096.
+- Restore block parser state on fail in `lheading` rule, #1131.
+
+
 ## [14.1.1] - 2026-01-11
 ### Security
 - Fixed regression from v13 in linkify inline rule. Specific patterns could
