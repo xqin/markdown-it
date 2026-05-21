@@ -69,6 +69,13 @@ describe('Utils', function () {
     })
   })
 
+  it('isPunctCharCode', function () {
+    assert.strictEqual(utils.isPunctCharCode(0x2014), true)
+    assert.strictEqual(utils.isPunctCharCode(0x61), false)
+
+    assert.strictEqual(utils.isPunctCharCode(0x2014), utils.isPunctChar('\u2014'))
+  })
+
   it('unescapeMd', function () {
     const unescapeMd = utils.unescapeMd
 
