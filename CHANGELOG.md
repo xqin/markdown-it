@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - More strict entities decode to avoid false positives `;`, #1096.
 - Restore block parser state on fail in `lheading` rule, #1131.
 
+### Security
+- Fixed poor smartquotes perfomance on > 70k quotes in single block
+
 
 ## [14.1.1] - 2026-01-11
 ### Security
