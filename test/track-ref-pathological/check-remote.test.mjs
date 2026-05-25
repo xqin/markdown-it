@@ -1,5 +1,6 @@
 import needle from 'needle'
 import assert from 'node:assert'
+import { describe, it } from 'node:test'
 import crypto from 'node:crypto'
 import { readFileSync } from 'fs'
 

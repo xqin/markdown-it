@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import { describe, it } from 'node:test'
 import { Worker as JestWorker } from 'jest-worker'
 
 async function test_pattern (str, mdOpts) {

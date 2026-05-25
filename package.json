@@ -39,10 +39,10 @@
   "scripts": {
     "lint": "eslint .",
     "test": "npm run lint && npm run test:cmspec && npm run test:markdown-it && npm run test:build",
-    "test:cmspec": "mocha --reporter dot test/cmspec/**/*.test.mjs",
-    "test:markdown-it": "mocha test/markdown-it/**/*.test.mjs",
-    "test:build": "npm run build && mocha test/build/**/*.test.js",
-    "test:track-ref-pathological": "mocha test/track-ref-pathological/**/*.test.mjs",
+    "test:cmspec": "node --test --test-reporter=dot test/cmspec/**/*.test.mjs",
+    "test:markdown-it": "node --test test/markdown-it/**/*.test.mjs",
+    "test:build": "npm run build && node --test test/build/**/*.test.js",
+    "test:track-ref-pathological": "node --test test/track-ref-pathological/**/*.test.mjs",
     "coverage": "npm run build && c8 --exclude dist --exclude test -r text -r html -r lcov mocha test/cmspec/**/*.test.mjs test/markdown-it/**/*.test.mjs test/build/**/*.test.js --ignore test/markdown-it/pathological.test.mjs",
     "doc": "node support/build_doc.mjs",
     "gh-doc": "npm run doc && gh-pages -d apidoc -f",
@@ -75,7 +75,6 @@
     "ansi": "^0.3.0",
     "benchmark": "~2.1.0",
     "c8": "^8.0.1",
-    "chai": "^4.2.0",
     "eslint": "^8.4.1",
     "eslint-config-standard": "^17.1.0",
     "express": "^4.14.0",
@@ -92,16 +91,10 @@
     "markdown-it-mark": "^4.0.0",
     "markdown-it-sub": "^2.0.0",
     "markdown-it-sup": "^2.0.0",
-    "markdown-it-testgen": "^0.1.3",
-    "mocha": "^10.2.0",
     "ndoc": "^6.0.0",
     "needle": "^3.0.0",
     "rollup": "^4.5.0",
     "shelljs": "^0.8.4",
     "supertest": "^6.0.1"
-  },
-  "mocha": {
-    "inline-diffs": true,
-    "timeout": 60000
   }
 }
