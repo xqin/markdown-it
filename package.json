@@ -39,7 +39,7 @@
   "scripts": {
     "lint": "eslint .",
     "test": "npm run lint && npm run test:cmspec && npm run test:markdown-it && npm run test:build",
-    "test:cmspec": "mocha test/cmspec/**/*.test.mjs",
+    "test:cmspec": "mocha --reporter dot test/cmspec/**/*.test.mjs",
     "test:markdown-it": "mocha test/markdown-it/**/*.test.mjs",
     "test:build": "npm run build && mocha test/build/**/*.test.js",
     "test:track-ref-pathological": "mocha test/track-ref-pathological/**/*.test.mjs",
