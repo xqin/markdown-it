@@ -3,6 +3,7 @@
 import markdownit from '../../index.mjs'
 import * as mdurl from 'mdurl'
 import hljs from 'highlight.js'
+import 'highlight.js/styles/github.min.css'
 import sample from './sample.md?raw'
 
 // plugins
