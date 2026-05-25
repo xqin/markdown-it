@@ -1,5 +1,3 @@
-/* eslint-env browser */
-
 import markdownit from '../../index.mjs'
 import * as mdurl from 'mdurl'
 import hljs from 'highlight.js'
@@ -134,7 +132,6 @@ defaults.highlight = function (str, lang) {
     } else if (lang === 'auto') {
       const result = hljs.highlightAuto(str)
 
-      /* eslint-disable no-console */
       console.log('highlight language: ' + result.language + ', relevance: ' + result.relevance)
 
       return '<pre class="hljs language-' + esc(result.language) + '"><code>' +
