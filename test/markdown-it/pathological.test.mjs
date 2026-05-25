@@ -1,32 +1,26 @@
 import assert from 'node:assert'
 import { describe, it } from 'node:test'
-import { Worker as JestWorker } from 'jest-worker'
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads'
+import { fileURLToPath } from 'node:url'
 
-async function test_pattern (str, mdOpts) {
-  const worker = new JestWorker(
-    new URL('../pathological_worker.js', import.meta.url),
-    {
-      numWorkers: 1,
-      enableWorkerThreads: true
-    }
-  )
+if (!isMainThread) {
+  const { default: md } = await import('../../index.mjs')
+  parentPort.postMessage(md(workerData.opts).render(workerData.str))
+  process.exit(0)
+}
 
-  let result
-  const ac = new AbortController()
-
-  try {
-    result = await Promise.race([
-      worker.render(str, mdOpts),
-      new Promise((resolve, reject) => {
-        setTimeout(() => reject(new Error('Terminated (timeout exceeded)')), 3000).unref()
-      })
-    ])
-  } finally {
-    ac.abort()
-    await worker.end()
-  }
-
-  return result
+function test_pattern (str, mdOpts) {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(fileURLToPath(import.meta.url), {
+      workerData: { str, opts: mdOpts }
+    })
+    const timer = setTimeout(() => {
+      worker.terminate()
+      reject(new Error('Terminated (timeout exceeded)'))
+    }, 3000)
+    worker.on('message', val => { clearTimeout(timer); resolve(val) })
+    worker.on('error', err => { clearTimeout(timer); reject(err) })
+  })
 }
 
 describe('Pathological sequences speed', () => {
