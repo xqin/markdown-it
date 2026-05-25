@@ -43,7 +43,7 @@
     "test:markdown-it": "node --test test/markdown-it/**/*.test.mjs",
     "test:build": "npm run build && node --test test/build/**/*.test.mjs",
     "test:track-ref-pathological": "node --test test/track-ref-pathological/**/*.test.mjs",
-    "coverage": "npm run build && c8 --exclude dist --exclude test -r text -r html -r lcov mocha test/cmspec/**/*.test.mjs test/markdown-it/**/*.test.mjs test/build/**/*.test.js --ignore test/markdown-it/pathological.test.mjs",
+    "coverage": "npm run build && c8 --include 'lib/**' -r text -r html -r lcov node --test --test-reporter=dot",
     "doc": "node support/build_doc.mjs",
     "gh-doc": "npm run doc && gh-pages -d apidoc -f",
     "demo": "npm run lint && node support/build_demo.mjs",

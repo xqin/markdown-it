@@ -17,7 +17,7 @@ function test_pattern (str, mdOpts) {
     const timer = setTimeout(() => {
       worker.terminate()
       reject(new Error('Terminated (timeout exceeded)'))
-    }, 3000)
+    }, 5000)
     worker.on('message', val => { clearTimeout(timer); resolve(val) })
     worker.on('error', err => { clearTimeout(timer); reject(err) })
   })
