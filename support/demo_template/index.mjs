@@ -192,11 +192,6 @@ function mdInit () {
   mdHtml.renderer.rules.table_open = function () {
     return '<table class="table table-striped">\n'
   }
-  // Replace emoji codes with images
-  mdHtml.renderer.rules.emoji = function (token, idx) {
-    return window.twemoji.parse(token[idx].content)
-  }
-
   //
   // Inject line numbers for sync scroll. Notes:
   //
