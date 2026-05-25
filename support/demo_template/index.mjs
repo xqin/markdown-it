@@ -211,29 +211,15 @@ function mdInit () {
   mdHtml.renderer.rules.paragraph_open = mdHtml.renderer.rules.heading_open = injectLineNumbers
 }
 
-function setHighlightedlContent (selector, content, lang) {
-  const el = qs(selector)
-
-  if (hljs) {
-    el.innerHTML = hljs.highlight(content, { language: lang }).value
-  } else {
-    el.textContent = content
-  }
-}
-
 function updateResult () {
   const source = qs('.source').value
 
   // Update only active view to avoid slowdowns
-  // (debug & src view with highlighting are a bit slow)
+  // (debug & src views can be slow for big sources)
   if (defaults._view === 'src') {
-    setHighlightedlContent('.result-src-content', mdSrc.render(source), 'html')
+    qs('.result-src-content').textContent = mdSrc.render(source)
   } else if (defaults._view === 'debug') {
-    setHighlightedlContent(
-      '.result-debug-content',
-      JSON.stringify(mdSrc.parse(source, { references: {} }), null, 2),
-      'json'
-    )
+    qs('.result-debug-content').textContent = JSON.stringify(mdSrc.parse(source, { references: {} }), null, 2)
   } else { /* defaults._view === 'html' */
     qs('.result-html').innerHTML = mdHtml.render(source)
   }
