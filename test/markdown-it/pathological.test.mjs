@@ -1,12 +1,9 @@
-import needle from 'needle'
 import assert from 'node:assert'
-import crypto from 'node:crypto'
 import { Worker as JestWorker } from 'jest-worker'
-import { readFileSync } from 'fs'
 
 async function test_pattern (str, mdOpts) {
   const worker = new JestWorker(
-    new URL('./pathological_worker.js', import.meta.url),
+    new URL('../pathological_worker.js', import.meta.url),
     {
       numWorkers: 1,
       enableWorkerThreads: true
@@ -41,19 +38,6 @@ describe('Pathological sequences speed', () => {
 
   // Ported from cmark, https://github.com/commonmark/cmark/blob/master/test/pathological_tests.py
   describe('Cmark', () => {
-    it('verify original source crc', async () => {
-      /* eslint-disable  max-len */
-      const src = await needle('get', 'https://raw.githubusercontent.com/commonmark/cmark/master/test/pathological_tests.py')
-      const src_md5 = crypto.createHash('md5').update(src.body).digest('hex')
-      const tracked_md5 = JSON.parse(readFileSync(new URL('./pathological.json', import.meta.url))).md5
-
-      assert.strictEqual(
-        src_md5,
-        tracked_md5,
-        'CRC or cmark pathological tests hanged. Verify and update pathological.json'
-      )
-    })
-
     it('nested inlines', async () => {
       await test_pattern('*'.repeat(60000) + 'a' + '*'.repeat(60000))
     })

@@ -1,7 +1,7 @@
 'use strict'
 
 const assert = require('assert')
-const md = require('../')()
+const md = require('../../')()
 
 describe('CJS', () => {
   it('require', () => {
