@@ -1,8 +1,10 @@
 /* eslint-env browser */
 /* global $, _ */
 
+import markdownit from '../../index.mjs'
 import * as mdurl from 'mdurl'
 import hljs from 'highlight.js'
+import sample from './sample.md?raw'
 
 // plugins
 import md_abbr from 'markdown-it-abbr'
@@ -16,6 +18,7 @@ import md_sub from 'markdown-it-sub'
 import md_sup from 'markdown-it-sup'
 
 let mdHtml, mdSrc, permalink, scrollMap
+let permalinkLoaded = false
 
 const defaults = {
   // Enable HTML tags in source
@@ -87,10 +90,10 @@ function setResultView (val) {
 
 function mdInit () {
   if (defaults._strict) {
-    mdHtml = window.markdownit('commonmark')
-    mdSrc = window.markdownit('commonmark')
+    mdHtml = markdownit('commonmark')
+    mdSrc = markdownit('commonmark')
   } else {
-    mdHtml = window.markdownit(defaults)
+    mdHtml = markdownit(defaults)
       .use(md_abbr)
       .use(md_container, 'warning')
       .use(md_deflist)
@@ -100,7 +103,7 @@ function mdInit () {
       .use(md_mark)
       .use(md_sub)
       .use(md_sup)
-    mdSrc = window.markdownit(defaults)
+    mdSrc = markdownit(defaults)
       .use(md_abbr)
       .use(md_container, 'warning')
       .use(md_deflist)
@@ -316,6 +319,7 @@ function loadPermalink () {
 
     if (_.isString(cfg.source)) {
       $('.source').val(cfg.source)
+      permalinkLoaded = true
     }
   } catch (__) {
     return
@@ -357,6 +361,9 @@ $(function () {
   }
 
   loadPermalink()
+  if (!permalinkLoaded) {
+    $('.source').val(sample)
+  }
 
   // Activate tooltips
   $('._tip').tooltip({ container: 'body' })
