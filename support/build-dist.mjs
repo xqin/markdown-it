@@ -14,7 +14,7 @@ const common = {
   build: {
     outDir: 'dist',
     emptyOutDir: false,
-    sourcemap: false,
+    sourcemap: true,
     target: 'es2015'
   }
 }
