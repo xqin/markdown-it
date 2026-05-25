@@ -1,5 +1,4 @@
 /* eslint-env browser */
-/* global $, _ */
 
 import markdownit from '../../index.mjs'
 import * as mdurl from 'mdurl'
@@ -19,6 +18,80 @@ import md_sup from 'markdown-it-sup'
 
 let mdHtml, mdSrc, permalink, scrollMap
 let permalinkLoaded = false
+const scrollAnimations = new WeakMap()
+const hasOwn = Object.prototype.hasOwnProperty
+
+function qs (selector) {
+  return document.querySelector(selector)
+}
+
+function qsa (selector) {
+  return Array.from(document.querySelectorAll(selector))
+}
+
+function isObject (val) {
+  return val !== null && typeof val === 'object' && !Array.isArray(val)
+}
+
+function debounce (fn, wait, options = {}) {
+  let timeoutId
+  let maxTimeoutId
+  let lastArgs
+  let lastThis
+
+  function invoke () {
+    clearTimeout(timeoutId)
+    clearTimeout(maxTimeoutId)
+    timeoutId = null
+    maxTimeoutId = null
+    fn.apply(lastThis, lastArgs)
+    lastArgs = null
+    lastThis = null
+  }
+
+  return function (...args) {
+    lastArgs = args
+    lastThis = this
+
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(invoke, wait)
+
+    if (options.maxWait && !maxTimeoutId) {
+      maxTimeoutId = setTimeout(invoke, options.maxWait)
+    }
+  }
+}
+
+function setScrollTop (el, top, duration) {
+  cancelAnimationFrame(scrollAnimations.get(el))
+
+  const from = el.scrollTop
+  const diff = top - from
+  const start = window.performance.now()
+
+  function step (time) {
+    const progress = Math.min((time - start) / duration, 1)
+    el.scrollTop = from + diff * progress
+
+    if (progress < 1) {
+      scrollAnimations.set(el, requestAnimationFrame(step))
+    }
+  }
+
+  scrollAnimations.set(el, requestAnimationFrame(step))
+}
+
+function permalinkDefaults () {
+  const result = {}
+
+  for (const [key, val] of Object.entries(defaults)) {
+    if (key !== 'highlight') {
+      result[key] = val
+    }
+  }
+
+  return result
+}
 
 const defaults = {
   // Enable HTML tags in source
@@ -74,17 +147,17 @@ defaults.highlight = function (str, lang) {
 
 function setOptionClass (name, val) {
   if (val) {
-    $('body').addClass('opt_' + name)
+    document.body.classList.add('opt_' + name)
   } else {
-    $('body').removeClass('opt_' + name)
+    document.body.classList.remove('opt_' + name)
   }
 }
 
 function setResultView (val) {
-  $('body').removeClass('result-as-html')
-  $('body').removeClass('result-as-src')
-  $('body').removeClass('result-as-debug')
-  $('body').addClass('result-as-' + val)
+  document.body.classList.remove('result-as-html')
+  document.body.classList.remove('result-as-src')
+  document.body.classList.remove('result-as-debug')
+  document.body.classList.add('result-as-' + val)
   defaults._view = val
 }
 
@@ -143,15 +216,17 @@ function mdInit () {
 }
 
 function setHighlightedlContent (selector, content, lang) {
-  if (window.hljs) {
-    $(selector).html(window.hljs.highlight(content, { language: lang }).value)
+  const el = qs(selector)
+
+  if (hljs) {
+    el.innerHTML = hljs.highlight(content, { language: lang }).value
   } else {
-    $(selector).text(content)
+    el.textContent = content
   }
 }
 
 function updateResult () {
-  const source = $('.source').val()
+  const source = qs('.source').value
 
   // Update only active view to avoid slowdowns
   // (debug & src view with highlighting are a bit slow)
@@ -164,7 +239,7 @@ function updateResult () {
       'json'
     )
   } else { /* defaults._view === 'html' */
-    $('.result-html').html(mdHtml.render(source))
+    qs('.result-html').innerHTML = mdHtml.render(source)
   }
 
   // reset lines mapping cache on content update
@@ -175,7 +250,7 @@ function updateResult () {
       // serialize state - source and options
       permalink.href = '#md3=' + mdurl.encode(JSON.stringify({
         source,
-        defaults: _.omit(defaults, 'highlight')
+        defaults: permalinkDefaults()
       }), '-_.!~', false)
     } else {
       permalink.href = ''
@@ -189,26 +264,30 @@ function updateResult () {
 // That's a bit dirty to process each line everytime, but ok for demo.
 // Optimizations are required only for big texts.
 function buildScrollMap () {
-  const textarea = $('.source')
+  const textarea = qs('.source')
+  const resultHtml = qs('.result-html')
+  const textareaStyle = getComputedStyle(textarea)
+  const sourceLikeDiv = document.createElement('div')
 
-  const sourceLikeDiv = $('<div />').css({
+  Object.assign(sourceLikeDiv.style, {
     position: 'absolute',
     visibility: 'hidden',
     height: 'auto',
-    width: textarea[0].clientWidth,
-    'font-size': textarea.css('font-size'),
-    'font-family': textarea.css('font-family'),
-    'line-height': textarea.css('line-height'),
-    'white-space': textarea.css('white-space')
-  }).appendTo('body')
+    width: textarea.clientWidth + 'px',
+    fontSize: textareaStyle.fontSize,
+    fontFamily: textareaStyle.fontFamily,
+    lineHeight: textareaStyle.lineHeight,
+    whiteSpace: textareaStyle.whiteSpace
+  })
+  document.body.appendChild(sourceLikeDiv)
 
-  const offset = $('.result-html').scrollTop() - $('.result-html').offset().top
+  const resultTop = resultHtml.getBoundingClientRect().top
   const _scrollMap = []
   const nonEmptyList = []
   const lineHeightMap = []
 
   let acc = 0
-  textarea.val().split('\n').forEach(function (str) {
+  textarea.value.split('\n').forEach(function (str) {
     lineHeightMap.push(acc)
 
     if (str.length === 0) {
@@ -216,9 +295,9 @@ function buildScrollMap () {
       return
     }
 
-    sourceLikeDiv.text(str)
-    const h = parseFloat(sourceLikeDiv.css('height'))
-    const lh = parseFloat(sourceLikeDiv.css('line-height'))
+    sourceLikeDiv.textContent = str
+    const h = parseFloat(getComputedStyle(sourceLikeDiv).height)
+    const lh = parseFloat(getComputedStyle(sourceLikeDiv).lineHeight)
     acc += Math.round(h / lh)
   })
   sourceLikeDiv.remove()
@@ -230,17 +309,16 @@ function buildScrollMap () {
   nonEmptyList.push(0)
   _scrollMap[0] = 0
 
-  $('.line').each(function (n, el) {
-    const $el = $(el)
-    let t = $el.data('line')
+  qsa('.line').forEach(function (el) {
+    let t = el.dataset.line
     if (t === '') { return }
     t = lineHeightMap[t]
     if (t !== 0) { nonEmptyList.push(t) }
-    _scrollMap[t] = Math.round($el.offset().top + offset)
+    _scrollMap[t] = Math.round(el.getBoundingClientRect().top - resultTop + resultHtml.scrollTop)
   })
 
   nonEmptyList.push(linesCount)
-  _scrollMap[linesCount] = $('.result-html')[0].scrollHeight
+  _scrollMap[linesCount] = resultHtml.scrollHeight
 
   let pos = 0
   for (let i = 1; i < linesCount; i++) {
@@ -258,24 +336,22 @@ function buildScrollMap () {
 }
 
 // Synchronize scroll position from source to result
-const syncResultScroll = _.debounce(function () {
-  const textarea   = $('.source')
-  const lineHeight = parseFloat(textarea.css('line-height'))
+const syncResultScroll = debounce(function () {
+  const textarea   = qs('.source')
+  const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight)
 
-  const lineNo = Math.floor(textarea.scrollTop() / lineHeight)
+  const lineNo = Math.floor(textarea.scrollTop / lineHeight)
   if (!scrollMap) { scrollMap = buildScrollMap() }
   const posTo = scrollMap[lineNo]
-  $('.result-html').stop(true).animate({
-    scrollTop: posTo
-  }, 100, 'linear')
+  setScrollTop(qs('.result-html'), posTo, 100)
 }, 50, { maxWait: 50 })
 
 // Synchronize scroll position from result to source
-const syncSrcScroll = _.debounce(function () {
-  const resultHtml = $('.result-html')
-  const scrollTop  = resultHtml.scrollTop()
-  const textarea   = $('.source')
-  const lineHeight = parseFloat(textarea.css('line-height'))
+const syncSrcScroll = debounce(function () {
+  const resultHtml = qs('.result-html')
+  const scrollTop  = resultHtml.scrollTop
+  const textarea   = qs('.source')
+  const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight)
 
   if (!scrollMap) { scrollMap = buildScrollMap() }
 
@@ -296,9 +372,7 @@ const syncSrcScroll = _.debounce(function () {
     break
   }
 
-  textarea.stop(true).animate({
-    scrollTop: lineHeight * line
-  }, 100, 'linear')
+  setScrollTop(textarea, lineHeight * line, 100)
 }, 50, { maxWait: 50 })
 
 function loadPermalink () {
@@ -317,20 +391,20 @@ function loadPermalink () {
       return
     }
 
-    if (_.isString(cfg.source)) {
-      $('.source').val(cfg.source)
+    if (typeof cfg.source === 'string') {
+      qs('.source').value = cfg.source
       permalinkLoaded = true
     }
   } catch (__) {
     return
   }
 
-  const opts = _.isObject(cfg.defaults) ? cfg.defaults : {}
+  const opts = isObject(cfg.defaults) ? cfg.defaults : {}
 
   // copy config to defaults, but only if key exists
   // and value has the same type
-  _.forOwn(opts, function (val, key) {
-    if (!_.has(defaults, key)) { return }
+  Object.entries(opts).forEach(function ([key, val]) {
+    if (!hasOwn.call(defaults, key)) { return }
 
     // Legacy, for old links
     if (key === '_src') {
@@ -338,8 +412,8 @@ function loadPermalink () {
       return
     }
 
-    if ((_.isBoolean(defaults[key]) && _.isBoolean(val)) ||
-        (_.isString(defaults[key]) && _.isString(val))) {
+    if ((typeof defaults[key] === 'boolean' && typeof val === 'boolean') ||
+        (typeof defaults[key] === 'string' && typeof val === 'string')) {
       defaults[key] = val
     }
   })
@@ -352,33 +426,27 @@ function loadPermalink () {
 
 // Init on page load
 //
-$(function () {
+function init () {
   // highlight snippet
-  if (window.hljs) {
-    $('pre.code-sample code').each(function (i, block) {
-      window.hljs.highlightBlock(block)
-    })
-  }
+  qsa('pre.code-sample code').forEach(block => hljs.highlightElement(block))
 
   loadPermalink()
   if (!permalinkLoaded) {
-    $('.source').val(sample)
+    qs('.source').value = sample
   }
 
   // Set default option values and option listeners
-  _.forOwn(defaults, function (val, key) {
+  Object.entries(defaults).forEach(function ([key, val]) {
     if (key === 'highlight') { return }
 
     const el = document.getElementById(key)
 
     if (!el) { return }
 
-    const $el = $(el)
-
-    if (_.isBoolean(val)) {
-      $el.prop('checked', val)
-      $el.on('change', function () {
-        const value = Boolean($el.prop('checked'))
+    if (typeof val === 'boolean') {
+      el.checked = val
+      el.addEventListener('change', function () {
+        const value = Boolean(el.checked)
         setOptionClass(key, value)
         defaults[key] = value
         mdInit()
@@ -386,11 +454,13 @@ $(function () {
       })
       setOptionClass(key, val)
     } else {
-      $(el).val(val)
-      $el.on('change update keyup', function () {
-        defaults[key] = String($(el).val())
-        mdInit()
-        updateResult()
+      el.value = val
+      ;['change', 'update', 'keyup'].forEach(function (eventName) {
+        el.addEventListener(eventName, function () {
+          defaults[key] = String(el.value)
+          mdInit()
+          updateResult()
+        })
       })
     }
   })
@@ -401,26 +471,37 @@ $(function () {
   permalink = document.getElementById('permalink')
 
   // Setup listeners
-  $('.source').on('keyup paste cut mouseup', _.debounce(updateResult, 300, { maxWait: 500 }))
+  const source = qs('.source')
+  const resultHtml = qs('.result-html')
+  const debouncedUpdateResult = debounce(updateResult, 300, { maxWait: 500 })
 
-  $('.source').on('touchstart mouseover', function () {
-    $('.result-html').off('scroll')
-    $('.source').on('scroll', syncResultScroll)
+  ;['keyup', 'paste', 'cut', 'mouseup'].forEach(function (eventName) {
+    source.addEventListener(eventName, debouncedUpdateResult)
   })
 
-  $('.result-html').on('touchstart mouseover', function () {
-    $('.source').off('scroll')
-    $('.result-html').on('scroll', syncSrcScroll)
+  ;['touchstart', 'mouseover'].forEach(function (eventName) {
+    source.addEventListener(eventName, function () {
+      resultHtml.removeEventListener('scroll', syncSrcScroll)
+      source.addEventListener('scroll', syncResultScroll)
+    })
+
+    resultHtml.addEventListener(eventName, function () {
+      source.removeEventListener('scroll', syncResultScroll)
+      resultHtml.addEventListener('scroll', syncSrcScroll)
+    })
   })
 
-  $('.source-clear').on('click', function (event) {
-    $('.source').val('')
+  qs('.source-clear').addEventListener('click', function (event) {
+    source.value = ''
     updateResult()
     event.preventDefault()
   })
 
-  $(document).on('click', '[data-result-as]', function (event) {
-    const view = $(this).data('resultAs')
+  document.addEventListener('click', function (event) {
+    const el = event.target.closest('[data-result-as]')
+    if (!el) { return }
+
+    const view = el.dataset.resultAs
     if (view) {
       setResultView(view)
       // only to update permalink
@@ -430,9 +511,15 @@ $(function () {
   })
 
   // Need to recalculate line positions on window resize
-  $(window).on('resize', function () {
+  window.addEventListener('resize', function () {
     scrollMap = null
   })
 
   updateResult()
-})
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init)
+} else {
+  init()
+}
