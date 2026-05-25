@@ -56,11 +56,7 @@ const config_cjs_no_deps = {
   ]
 }
 
-let config = [
+export default [
   config_umd_full,
   config_cjs_no_deps
 ]
-
-if (process.env.CJS_ONLY) config = [config_cjs_no_deps]
-
-export default config
