@@ -4,4 +4,6 @@ coverage/
 demo/
 apidoc/
 dist/
+.claude/
+.codex/
 *.log
