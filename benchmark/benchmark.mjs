@@ -5,7 +5,7 @@ import fs from 'node:fs'
 import util from 'node:util'
 import Benchmark from 'benchmark'
 import ansi from 'ansi'
-const cursor    = ansi(process.stdout)
+const cursor = ansi(process.stdout)
 
 const IMPLS = []
 

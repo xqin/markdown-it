@@ -12,8 +12,7 @@ export default [
 
   {
     rules: {
-      camelcase: 'off',
-      '@stylistic/no-multi-spaces': 'off'
+      camelcase: 'off'
     }
   }
 ]

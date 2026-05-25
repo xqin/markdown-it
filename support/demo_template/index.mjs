@@ -316,7 +316,7 @@ function buildScrollMap () {
 
 // Synchronize scroll position from source to result
 const syncResultScroll = debounce(function () {
-  const textarea   = qs('.source')
+  const textarea = qs('.source')
   const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight)
 
   const lineNo = Math.floor(textarea.scrollTop / lineHeight)
@@ -328,8 +328,8 @@ const syncResultScroll = debounce(function () {
 // Synchronize scroll position from result to source
 const syncSrcScroll = debounce(function () {
   const resultHtml = qs('.result-html')
-  const scrollTop  = resultHtml.scrollTop
-  const textarea   = qs('.source')
+  const scrollTop = resultHtml.scrollTop
+  const textarea = qs('.source')
   const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight)
 
   if (!scrollMap) { scrollMap = buildScrollMap() }

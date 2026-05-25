@@ -75,8 +75,8 @@ readFile(options.spec, 'utf8', function (error, input) {
               token.info.trim() === 'example'
     })
     .forEach(function (token) {
-      const arr  = token.content.split(/^\.\s*?$/m, 2)
-      const md   = arr[0]
+      const arr = token.content.split(/^\.\s*?$/m, 2)
+      const md = arr[0]
       const html = arr[1].replace(/^\n/, '')
 
       const result = {
