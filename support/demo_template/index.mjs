@@ -365,9 +365,6 @@ $(function () {
     $('.source').val(sample)
   }
 
-  // Activate tooltips
-  $('._tip').tooltip({ container: 'body' })
-
   // Set default option values and option listeners
   _.forOwn(defaults, function (val, key) {
     if (key === 'highlight') { return }
