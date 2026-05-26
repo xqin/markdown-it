@@ -1,6 +1,4 @@
-import { createRequire } from 'node:module'
-
-const marked = createRequire(import.meta.url)('../../extra/lib/node_modules/marked')
+import { marked } from '../../extra/node_modules/marked/lib/marked.esm.js'
 
 export function run (data) {
   return marked(data)

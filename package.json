@@ -50,7 +50,7 @@
     "demo": "npm run lint && node support/build_demo.mjs",
     "gh-demo": "npm run demo && gh-pages -d demo -f -b master -r git@github.com:markdown-it/markdown-it.github.io.git",
     "build": "node support/build-dist.mjs",
-    "benchmark-deps": "npm install --prefix benchmark/extra/ -g marked@0.3.6 commonmark@0.26.0 markdown-it/markdown-it.git#2.2.1",
+    "benchmark-deps": "npm install --prefix benchmark/extra/",
     "specsplit": "support/specsplit.mjs good -o test/fixtures/commonmark/good.txt && support/specsplit.mjs bad -o test/fixtures/commonmark/bad.txt && support/specsplit.mjs",
     "todo": "grep 'TODO' -n -r ./lib 2>/dev/null",
     "prepack": "npm test && npm run build && npm run demo && npm run doc",

@@ -1,4 +1,7 @@
-benchmark/extra/
+benchmark/extra/node_modules/
+benchmark/extra/bin/
+benchmark/extra/lib/
+benchmark/extra/share/
 node_modules/
 coverage/
 demo/
